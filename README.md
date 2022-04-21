@@ -1,46 +1,36 @@
-# Forge Template
+# Build a yield strategy with Tribe Turbo and ERC-4626
+Tutorial on creating a yield generating strategy using the Tribe DAO's Turbo and ERC-4626 products.
+## Getting started
+1. Git clone this repo: `git clone https://github.com/fei-protocol/ethAmsterdam-getting-started.git`
+2. Install Forge and contract dependencies: `git submodule update --init --recursive`
+3. Install developer dependencies: `npm install`
+4. Compile contracts: `forge build`
+5. Run tests by forking mainnet: `API_KEY=0x123 forge test --fork-url https://eth-mainnet.alchemyapi.io/v2/$API_KEY`
 
-A template for quickly getting started with forge
+## Prerequisites
+Forge installed. To install:
+1. `curl -L https://foundry.paradigm.xyz | bash`
+2. `foundryup`
 
-## Getting Started
+## Definition
+### ERC-4626
+A new standard for Tokenized vaults. It represents a strategy which is itself also tokenised
+### Turbo
+A standard wrapper, called a Safe, around a collaterised Fuse lending position. 
 
-```
-mkdir my-project
-cd my-project
-forge init --template https://github.com/FrankieIsLost/forge-template
-git submodule update --init --recursive  ## initialize submodule dependencies
-npm install ## install development dependencies
-forge build
-forge test
-```
+Users create a Safe and then borrow Fei. The borrowed Fei is costless, 0% APR, and that borrowed Fei is programmatically placed into an ERC-4626 strategy.
 
-## Features
+## Flywheel V2
 
-### Testing Utilities
+## How this works
+This tutorial takes you through the end to end flow of:
+1. Creating an ERC-4626 strategy 
+2. Creating a Turbo Safe 
 
-Includes a `Utilities.sol` contract with common testing methods (like creating users with an initial balance), as well as various other utility contracts.
+The tutorial forks makes use of Hardhat, Typescript and forks mainnet, so we can deploy and test against Fuse.
 
-### Preinstalled dependencies
 
-`ds-test` for testing, `forge-std` for better cheatcode UX, and `solmate` for optimized contract implementations.  
+Powered by Forge template
 
-### Linting
-
-Pre-configured `solhint` and `prettier-plugin-solidity`. Can be run by
-
-```
-npm run solhint
-npm run prettier
-```
-
-### CI with Github Actions
-
-Automatically run linting and tests on pull requests.
-
-### Default Configuration
-
-Including `.gitignore`, `.vscode`, `remappings.txt`
-
-## Acknowledgement
-
-Inspired by great dapptools templates like https://github.com/gakonst/forge-template, https://github.com/gakonst/dapptools-template and https://github.com/transmissions11/dapptools-template
+<!-- TODO -->
+1. Add fuse-flywheel
