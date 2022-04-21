@@ -10,9 +10,6 @@
 [submodule "lib/fuse-flywheel"]
 	path = lib/fuse-flywheel
 	url = https://github.com/fei-protocol/fuse-flywheel
-[submodule "solmate"]
-	path = solmate
-	url = https://github.com/Rari-Capital/solmate
 [submodule "lib/tribe-turbo"]
 	path = lib/tribe-turbo
 	url = https://github.com/fei-protocol/tribe-turbo

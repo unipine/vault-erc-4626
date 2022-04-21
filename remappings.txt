@@ -1,4 +1,4 @@
 ds-test/=lib/ds-test/src/
-solmate/=lib/solmate/src/
 forge-std/=lib/forge-std/src/
 fuse-flywheel/=lib/fuse-flywheel/src/
+tribe-turbo/=lib/tribe-turbo/src/
