@@ -8,7 +8,6 @@ import {FuseERC4626} from "fuse-flywheel/vaults/fuse/FuseERC4626.sol";
 import {Addresses} from "./utils/Addresses.sol";
 import {TurboMaster, ERC20, TurboSafe} from "tribe-turbo/TurboMaster.sol";
 import {TurboBooster} from "tribe-turbo/modules/TurboBooster.sol";
-import "forge-std/console.sol";
 
 /// @notice Build yield generating strategies with Turbo and ERC-4626
 contract BuildYieldStrategy is DSTest {

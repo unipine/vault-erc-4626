@@ -1,15 +1,15 @@
-[submodule "lib/ds-test"]
+[submodule "ds-test"]
 	path = lib/ds-test
 	url = https://github.com/dapphub/ds-test
-[submodule "lib/solmate"]
-	path = lib/solmate
-	url = https://github.com/Rari-Capital/solmate
-[submodule "lib/forge-std"]
-	path = lib/forge-std
-	url = https://github.com/brockelmore/forge-std
-[submodule "lib/fuse-flywheel"]
-	path = lib/fuse-flywheel
-	url = https://github.com/fei-protocol/fuse-flywheel
-[submodule "lib/tribe-turbo"]
+[submodule "tribe-turbo"]
 	path = lib/tribe-turbo
 	url = https://github.com/fei-protocol/tribe-turbo
+[submodule "fuse-flywheel"]
+	path = lib/fuse-flywheel
+	url = https://github.com/fei-protocol/fuse-flywheel
+[submodule "forge-std"]
+	path = lib/forge-std
+	url = https://github.com/brockelmore/forge-std
+[submodule "solmate"]
+	path = lib/solmate
+	url = https://github.com/Rari-Capital/solmate
