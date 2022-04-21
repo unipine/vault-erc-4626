@@ -12,7 +12,8 @@ Forge installed. To install:
 1. `curl -L https://foundry.paradigm.xyz | bash`
 2. `foundryup`
 
-## Definition
+## Background
+This tutorial relies on three of the Tribe DAO's products:
 ### ERC-4626
 A new standard for Tokenized vaults. It represents a strategy which is itself also tokenised
 ### Turbo
@@ -20,17 +21,20 @@ A standard wrapper, called a Safe, around a collaterised Fuse lending position.
 
 Users create a Safe and then borrow Fei. The borrowed Fei is costless, 0% APR, and that borrowed Fei is programmatically placed into an ERC-4626 strategy.
 
-## Flywheel V2
+### Flywheel V2
+TODO
 
-## How this works
-This tutorial takes you through the end to end flow of:
-1. Creating an ERC-4626 strategy 
-2. Creating a Turbo Safe 
+## How it works
+The tutorial takes you through the end to end flow of creating a strategy, opening a Turbo Safe and generating yield from that safe by deploying into the stragegy.
 
-The tutorial forks makes use of Hardhat, Typescript and forks mainnet, so we can deploy and test against Fuse.
+The steps are:
+1. Creating an ERC-4626 strategy, in this tutorial we use Fuse pools as the target
+2. Create a Turbo Safe, this is a wrapper around a soon to be collaterised fuse position
+3. Deposit collateral into the Turbo Safe
+4. Boost from the Turbo Safe into the strategy of your choosing
+
+It uses Forge and Foundry as the smart contract development framework and relies on Mainnet forking to avoid setting up Rari fuse pools etc.
 
 
-Powered by Forge template
+Powered by [forge-template](https://github.com/FrankieIsLost/forge-template)
 
-<!-- TODO -->
-1. Add fuse-flywheel
