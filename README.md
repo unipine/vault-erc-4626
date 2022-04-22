@@ -16,13 +16,17 @@ Forge installed. To install:
 This tutorial relies on three of the Tribe DAO's products:
 ### ERC-4626
 A new standard for Tokenized vaults. It represents a strategy which is itself also tokenised
+- https://github.com/fei-protocol/ERC4626
 ### Turbo
 A standard wrapper, called a Safe, around a collaterised Fuse lending position. 
 
 Users create a Safe and then borrow Fei. The borrowed Fei is costless, 0% APR, and that borrowed Fei is programmatically placed into an ERC-4626 strategy.
+- https://github.com/fei-protocol/tribe-turbo
 
 ### Flywheel V2
-TODO
+Flywheel is generalised token infrastructure to allow rewards to be distributed to an arbitrary strategy. It has a highly modular architecture and is in production on several Fuse pools.
+- https://github.com/fei-protocol/flywheel-v2
+- https://github.com/fei-protocol/fuse-flywheel 
 
 ## How it works
 The tutorial takes you through the end to end flow of creating a strategy, opening a Turbo Safe and generating yield from that safe by deploying into the stragegy.
@@ -37,4 +41,7 @@ It uses Forge and Foundry as the smart contract development framework and relies
 
 
 Powered by [forge-template](https://github.com/FrankieIsLost/forge-template)
+
+## ABIs and Mainnet addresses
+Commonly required ABIs and mainnet addresses, for use when creating Hardhat based hacks, are available in the `artifacts/` dir.
 
