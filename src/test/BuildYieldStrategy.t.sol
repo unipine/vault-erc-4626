@@ -10,10 +10,7 @@ import {TurboMaster, ERC20, TurboSafe} from "tribe-turbo/TurboMaster.sol";
 import {TurboBooster} from "tribe-turbo/modules/TurboBooster.sol";
 import {FuseFlywheelCore, IFlywheelBooster, Authority} from "fuse-flywheel/FuseFlywheelCore.sol";
 import {FuseFlywheelDynamicRewards} from "fuse-flywheel/rewards/FuseFlywheelDynamicRewards.sol";
-
-abstract contract CErc20 is ERC20 {
-    function mint(uint256 amount) external virtual returns (uint256);
-}
+import {Comptroller, CErc20} from "./utils/Interfaces.sol";
 
 /// @notice Build yield generating strategies with Turbo and ERC-4626
 contract BuildYieldStrategy is DSTest {
@@ -21,7 +18,7 @@ contract BuildYieldStrategy is DSTest {
 
     TurboMaster turboMaster;
     TurboBooster turboBooster;
-    FuseERC4626 somethingDegen;
+    FuseERC4626 strategy;
 
     address constant balAddress = 0xba100000625a3754423978a60c9317c58a424e3D;
     address constant balDAO = 0xb618F903ad1d00d6F7b92f5b0954DcdC056fC533;
@@ -39,15 +36,15 @@ contract BuildYieldStrategy is DSTest {
 
         // Deploy a yield generating strategy that Alice wants to be able
         //  to invest the Fei into
-        string memory name = "somethingDegen";
+        string memory name = "strategy";
         string memory symbol = "degen";
 
         address fusePool18CToken = 0x17b1A2E012cC4C31f83B90FF11d3942857664efc;
-        somethingDegen = new FuseERC4626(fusePool18CToken, name, symbol);
+        strategy = new FuseERC4626(fusePool18CToken, name, symbol);
 
         // Configure the strategy. Set a boost cap of $2M
         vm.prank(Addresses.TURBO_ADMIN_ADDRESS);
-        turboBooster.setBoostCapForVault(somethingDegen, 2_000_000e18); // 2M, in units of Fei
+        turboBooster.setBoostCapForVault(strategy, 2_000_000e18); // 2M, in units of Fei
     }
 
     /// @notice Create a Turbo safe, to use the created strategy
@@ -108,9 +105,9 @@ contract BuildYieldStrategy is DSTest {
         //    and deposit it into the strategy to earn yield
         uint256 boostAmount = 3100e18; // units of fei, ~$4k
         vm.prank(alice);
-        safe.boost(somethingDegen, boostAmount);
+        safe.boost(strategy, boostAmount);
 
-        assertEq(somethingDegen.balanceOf(address(safe)), boostAmount);
+        assertEq(strategy.balanceOf(address(safe)), boostAmount);
     }
 
     //////////  FLYWHEEL /////////////
@@ -136,7 +133,10 @@ contract BuildYieldStrategy is DSTest {
 
         // Create the rewards module - this particular module will  transfers rewards linearly
         // over a reward cyle (7 days here)
-        rewards = new FuseFlywheelDynamicRewards(flywheel, 7 days);
+        FuseFlywheelDynamicRewards rewards = new FuseFlywheelDynamicRewards(
+            flywheel,
+            7 days
+        );
 
         // Hook up to the flywheel
         flywheel.setFlywheelRewards(rewards);

@@ -28,6 +28,9 @@ Flywheel is generalised token infrastructure to allow rewards to be distributed 
 - https://github.com/fei-protocol/flywheel-v2
 - https://github.com/fei-protocol/fuse-flywheel 
 
+### Docs
+Tribe DAO documentation is at: https://fei-protocol.github.io/docs/ 
+
 ## How it works
 The tutorial takes you through the end to end flow of creating a strategy, opening a Turbo Safe and generating yield from that safe by deploying into the stragegy.
 
@@ -43,5 +46,5 @@ It uses Forge and Foundry as the smart contract development framework and relies
 Powered by [forge-template](https://github.com/FrankieIsLost/forge-template)
 
 ## ABIs and Mainnet addresses
-Commonly required ABIs and mainnet addresses, for use when creating Hardhat based hacks, are available in the `artifacts/` dir.
+Commonly required ABIs and mainnet addresses, for use when creating Hardhat based hacks, are available in the `protocolArtifacts/` dir.
 
