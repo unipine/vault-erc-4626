@@ -22,7 +22,13 @@ contract PowerVault is ERC4626 {
     address UNIoSQTH3 = 0x82c427AdFDf2d245Ec51D8046b41c4ee87F0d29C;
 
     // oSQTH token address
-    address oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+    address public constant oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+
+    // WETH token address
+    address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+    // eth wSQTH pool address
+    address ethWSqueethPool = 0x0;
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);
@@ -76,7 +82,47 @@ contract PowerVault is ERC4626 {
             );
             debt += wSqueethToMint;
             // Swap oSQTH for ETH in Uniswap V3 pool
+            uint256 amountOut = swapExactInputSQTH(wSqueethToMint);
         }
+    }
+
+    /**
+     * @notice Swap for an exact amount based off of input
+     * @param amountIn input amount
+     * @return amountOut output amount of asset
+     */
+    function swapExactInputSQTH(uint256 amountIn)
+        external
+        returns (uint256 amountOut)
+    {
+        // msg.sender must approve this contract
+
+        // Transfer the specified amount of DAI to this contract.
+        TransferHelper.safeTransferFrom(
+            oSQTH,
+            msg.sender,
+            address(this),
+            amountIn
+        );
+        // Approve the router to spend DAI.
+        TransferHelper.safeApprove(oSQTH, address(swapRouter), amountIn);
+
+        // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
+        // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: oSQTH,
+                tokenOut: WETH9,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: amountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+        // The call to `exactInputSingle` executes the swap.
+        amountOut = swapRouter.exactInputSingle(params);
     }
 
     /**
