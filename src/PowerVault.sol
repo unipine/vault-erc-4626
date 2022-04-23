@@ -22,10 +22,17 @@ contract PowerVault is ERC4626 {
     address UNIoSQTH3 = 0x82c427AdFDf2d245Ec51D8046b41c4ee87F0d29C;
 
     // oSQTH token address
-    address oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+    address public constant oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+
+    // WETH token address
+    address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+    // eth wSQTH pool address
+    address ethWSqueethPool = 0x0;
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);
+    uint256 private debt = 0;
 
     constructor(
         address _asset,
@@ -39,12 +46,23 @@ contract PowerVault is ERC4626 {
     // Swap user portion of ETH in Uniswap ETH<>oSQTH pool (this gives user oSQTH)
     // Burn oSQTH to unlock collateral (in ETH)
     // Collateral gets sent to user
-    function beforeWithdraw(uint256 underlyingAmount, uint256)
+    function beforeWithdraw(uint256 underlyingAmount, uint256 shares)
         internal
         override
-    {}
+    {
+        uint256 collateralAmount = WETH9.balanceOf(address(this));
+        // Gives us the amount of ETH to swap
+        uint256 ethToWithdraw = _calcEthToWithdraw(shares, collateralAmount);
+        // Swap WETH for oSQTH
+        swapExactInputSingleSwap(ethToWithdraw, WETH, oSQTH);
+        // Burn oSQTH
+        _burnWPowerPerp(msg.sender, debt, ethToWithdraw, false);
+    }
 
-    function afterDeposit(uint256 underlyingAmount, uint256) internal override {
+    function afterDeposit(uint256 underlyingAmount, uint256 shares)
+        internal
+        override
+    {
         uint256 collateralAmount = address(this).balance;
 
         // Check if we have hit collateralization ratio *mint minimum
@@ -54,10 +72,11 @@ contract PowerVault is ERC4626 {
                 COLLAT_RATIO
         ) {
             // Mint oSQTH
-            (
-                uint256 wSqueethToMint,
-                uint256 ethFee
-            ) = _calcWsqueethToMintAndFee(underlyingAmount, collateralAmount);
+            (uint256 wSqueethToMint, ) = _calcWsqueethToMintAndFee(
+                underlyingAmount,
+                debt,
+                collateralAmount
+            );
             // mint wSqueeth and send it to msg.sender
             _mintWPowerPerp(
                 msg.sender,
@@ -65,9 +84,54 @@ contract PowerVault is ERC4626 {
                 underlyingAmount,
                 false
             );
-            // Swap oSQTH for ETH in Uniswap V3 pool
-            // dont delete ^ sincerely, ratan
+            debt += wSqueethToMint;
+            // Swap oSQTH for WETH9 in Uniswap V3 pool
+            uint256 amountOut = swapExactInputSingleSwap(
+                wSqueethToMint,
+                oSQTH,
+                WETH9
+            );
         }
+    }
+
+    /**
+     * @notice Swap for an exact amount based off of input
+     * @param amountIn input amount
+     * @return amountOut output amount of asset
+     */
+    function swapExactInputSingleSwap(
+        uint256 amountIn,
+        address assetIn,
+        address assetOut
+    ) external returns (uint256 amountOut) {
+        // msg.sender must approve this contract
+
+        // Transfer the specified amount of DAI to this contract.
+        TransferHelper.safeTransferFrom(
+            assetIn,
+            msg.sender,
+            address(this),
+            amountIn
+        );
+        // Approve the router to spend DAI.
+        TransferHelper.safeApprove(assetIn, address(swapRouter), amountIn);
+
+        // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
+        // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: assetIn,
+                tokenOut: assetOut,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: amountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+        // The call to `exactInputSingle` executes the swap.
+        amountOut = swapRouter.exactInputSingle(params);
     }
 
     /**
@@ -110,6 +174,19 @@ contract PowerVault is ERC4626 {
         uint256 fee = wSqueethToMint.wmul(feeAdjustment);
 
         return (wSqueethToMint, fee);
+    }
+
+    /**
+     * @notice calculate ETH to withdraw from strategy given a ownership proportion
+     * @param _shares shares
+     * @param _strategyCollateralAmount amount of collateral in strategy
+     * @return amount of ETH allowed to withdraw
+     */
+    function _calcEthToWithdraw(
+        uint256 _shares,
+        uint256 _strategyCollateralAmount
+    ) internal pure returns (uint256) {
+        return _strategyCollateralAmount.wmul(_shares.div(totalSupply));
     }
 
     // no need with public total Assets
