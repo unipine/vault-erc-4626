@@ -3,6 +3,8 @@ pragma solidity 0.8.13;
 
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ISwapRouter} from "uniswap/interfaces/ISwapRouter.sol";
+import {TransferHelper} from "uniswap/libraries/TransferHelper.sol";
 
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
@@ -23,6 +25,9 @@ contract PowerVault is ERC4626 {
 
     // oSQTH token address
     address oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+
+    // Pool fee of 0.3%
+    uint24 public constant poolFee = 3000;
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);
