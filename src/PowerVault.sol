@@ -50,8 +50,12 @@ contract PowerVault is ERC4626 {
         internal
         override
     {
-        // Swap osqth for eth
-        uint256 ethToWithdraw = _calcEthToWithdraw(shares, strategyCollateral);
+        uint256 collateralAmount = WETH9.balanceOf(address(this));
+        // Gives us the amount of ETH to swap
+        uint256 ethToWithdraw = _calcEthToWithdraw(shares, collateralAmount);
+        // Swap WETH for oSQTH
+        swapExactInputSingleSwap(ethToWithdraw, WETH, oSQTH);
+        // Burn oSQTH
         _burnWPowerPerp(msg.sender, debt, ethToWithdraw, false);
     }
 
@@ -81,8 +85,12 @@ contract PowerVault is ERC4626 {
                 false
             );
             debt += wSqueethToMint;
-            // Swap oSQTH for ETH in Uniswap V3 pool
-            uint256 amountOut = swapExactInputSQTH(wSqueethToMint);
+            // Swap oSQTH for WETH9 in Uniswap V3 pool
+            uint256 amountOut = swapExactInputSingleSwap(
+                wSqueethToMint,
+                oSQTH,
+                WETH9
+            );
         }
     }
 
@@ -91,28 +99,29 @@ contract PowerVault is ERC4626 {
      * @param amountIn input amount
      * @return amountOut output amount of asset
      */
-    function swapExactInputSQTH(uint256 amountIn)
-        external
-        returns (uint256 amountOut)
-    {
+    function swapExactInputSingleSwap(
+        uint256 amountIn,
+        address assetIn,
+        address assetOut
+    ) external returns (uint256 amountOut) {
         // msg.sender must approve this contract
 
         // Transfer the specified amount of DAI to this contract.
         TransferHelper.safeTransferFrom(
-            oSQTH,
+            assetIn,
             msg.sender,
             address(this),
             amountIn
         );
         // Approve the router to spend DAI.
-        TransferHelper.safeApprove(oSQTH, address(swapRouter), amountIn);
+        TransferHelper.safeApprove(assetIn, address(swapRouter), amountIn);
 
         // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
         // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
             .ExactInputSingleParams({
-                tokenIn: oSQTH,
-                tokenOut: WETH9,
+                tokenIn: assetIn,
+                tokenOut: assetOut,
                 fee: poolFee,
                 recipient: msg.sender,
                 deadline: block.timestamp,
