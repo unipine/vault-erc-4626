@@ -26,6 +26,7 @@ contract PowerVault is ERC4626 {
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);
+    uint256 private debt = 0;
 
     constructor(
         address _asset,
@@ -39,12 +40,19 @@ contract PowerVault is ERC4626 {
     // Swap user portion of ETH in Uniswap ETH<>oSQTH pool (this gives user oSQTH)
     // Burn oSQTH to unlock collateral (in ETH)
     // Collateral gets sent to user
-    function beforeWithdraw(uint256 underlyingAmount, uint256)
+    function beforeWithdraw(uint256 underlyingAmount, uint256 shares)
         internal
         override
-    {}
+    {
+        // Swap osqth for eth
+        uint256 ethToWithdraw = _calcEthToWithdraw(shares, strategyCollateral);
+        _burnWPowerPerp(msg.sender, debt, ethToWithdraw, false);
+    }
 
-    function afterDeposit(uint256 underlyingAmount, uint256) internal override {
+    function afterDeposit(uint256 underlyingAmount, uint256 shares)
+        internal
+        override
+    {
         uint256 collateralAmount = address(this).balance;
 
         // Check if we have hit collateralization ratio *mint minimum
@@ -54,10 +62,11 @@ contract PowerVault is ERC4626 {
                 COLLAT_RATIO
         ) {
             // Mint oSQTH
-            (
-                uint256 wSqueethToMint,
-                uint256 ethFee
-            ) = _calcWsqueethToMintAndFee(underlyingAmount, collateralAmount);
+            (uint256 wSqueethToMint, ) = _calcWsqueethToMintAndFee(
+                underlyingAmount,
+                debt,
+                collateralAmount
+            );
             // mint wSqueeth and send it to msg.sender
             _mintWPowerPerp(
                 msg.sender,
@@ -65,8 +74,8 @@ contract PowerVault is ERC4626 {
                 underlyingAmount,
                 false
             );
+            debt += wSqueethToMint;
             // Swap oSQTH for ETH in Uniswap V3 pool
-            // dont delete ^ sincerely, ratan
         }
     }
 
@@ -110,6 +119,19 @@ contract PowerVault is ERC4626 {
         uint256 fee = wSqueethToMint.wmul(feeAdjustment);
 
         return (wSqueethToMint, fee);
+    }
+
+    /**
+     * @notice calculate ETH to withdraw from strategy given a ownership proportion
+     * @param _shares shares
+     * @param _strategyCollateralAmount amount of collateral in strategy
+     * @return amount of ETH allowed to withdraw
+     */
+    function _calcEthToWithdraw(
+        uint256 _shares,
+        uint256 _strategyCollateralAmount
+    ) internal pure returns (uint256) {
+        return _strategyCollateralAmount.wmul(_shares.div(totalSupply));
     }
 
     // no need with public total Assets
