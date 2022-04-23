@@ -1,6 +1,7 @@
 .container {
   display: inline-block;
-  background-color: #d8a6c3;
+  background: rgb(214,162,192);
+  background: linear-gradient(90deg, rgba(214,162,192,1) 0%, rgba(255,255,255,1) 100%);
   width: 100%;
 
 }
@@ -22,9 +23,13 @@
 }
 
 #infobutton {
-  margin: "auto";
+  margin: auto;
 }
 
+.buttoner {
+  margin: auto;
+  width: fit-content;
+}
 .sidenav {
   height: 100%; /* Full-height: remove this if you want "auto" height */
   width: 200px; /* Set the width of the sidebar */
@@ -51,6 +56,8 @@
 .module {
   border-radius: 25px;
   background-color: #000000C0; /* Black */
+  color: white;
+  width: 90%;
 }
 
 .footer {
