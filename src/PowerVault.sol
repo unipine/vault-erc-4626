@@ -18,11 +18,14 @@ contract PowerVault is ERC4626 {
     // Minimum to mint REMEMBER TO DIVIDE BY 1e18
     uint256 MINIMUM_MINT = 69e17;
 
-    // oSQTH address
-    address oSQTH = 0x0;
+    // Uniswap ETH <> SQU pool
+    address UNIoSQTH3 = 0x82c427AdFDf2d245Ec51D8046b41c4ee87F0d29C;
 
-    uint256 public totalAssets;
-    uint256 public maxAssets;
+    // oSQTH token address
+    address oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+
+    uint256 public totalAssets = 0;
+    uint256 public maxAssets = uint256(-1);
 
     constructor(
         address _asset,
@@ -42,17 +45,28 @@ contract PowerVault is ERC4626 {
     {}
 
     function afterDeposit(uint256 underlyingAmount, uint256) internal override {
+        uint256 collateralAmount = address(this).balance;
+
         // Check if we have hit collateralization ratio *mint minimum
-        if (address(this).balance > MINIMUM_MINT * COLLAT_RATIO) {
+        if (
+            collateralAmount >
+            MINIMUM_MINT * /* shouldn't this be *3/2 */
+                COLLAT_RATIO
+        ) {
             // Mint oSQTH
+            (
+                uint256 wSqueethToMint,
+                uint256 ethFee
+            ) = _calcWsqueethToMintAndFee(underlyingAmount, collateralAmount);
             // mint wSqueeth and send it to msg.sender
             _mintWPowerPerp(
-                _depositor,
+                msg.sender,
                 wSqueethToMint,
-                _amount,
-                _isFlashDeposit
+                underlyingAmount,
+                false
             );
             // Swap oSQTH for ETH in Uniswap V3 pool
+            // dont delete ^ sincerely, ratan
         }
     }
 
