@@ -7,3 +7,4 @@ solmate/=lib/solmate/src
 uniswap/=lib/v3-periphery-foundry/contracts/
 @openzeppelin/=lib/openzeppelin-contracts/
 @uniswap/v3-core/=lib/v3-core/
+euler/=lib/euler-interfaces/contracts/
