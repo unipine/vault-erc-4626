@@ -68,11 +68,11 @@ contract EulerVault is ERC4626 {
     ERC20 public immutable token;
 
     constructor(
-        ERC20 _token,
+        address _token,
         string memory _name,
         string memory _symbol
-    ) ERC4626(_token, _name, _symbol) {
-        token = _token;
+    ) ERC4626(ERC20(_token), _name, _symbol) {
+        token = ERC20(_token);
     }
 
     // Vault has WETH
