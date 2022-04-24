@@ -46,7 +46,11 @@ A new standard for Tokenized vaults. It represents a strategy which is itself al
 
 ### Squeeth
 
+- https://squeeth.opyn.co/
+
 ### Euler
+
+- https://app.euler.finance/
 
 ## ABIs and Mainnet addresses
 
