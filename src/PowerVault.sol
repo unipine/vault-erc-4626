@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.13;
+pragma solidity 0.8.10;
 
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ISwapRouter} from "uniswap/interfaces/ISwapRouter.sol";
+import {TransferHelper} from "uniswap/libraries/TransferHelper.sol";
 
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
@@ -29,6 +31,9 @@ contract PowerVault is ERC4626 {
 
     // eth wSQTH pool address
     address ethWSqueethPool = 0x0;
+
+    // Pool fee of 0.3%
+    uint24 public constant poolFee = 3000;
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);

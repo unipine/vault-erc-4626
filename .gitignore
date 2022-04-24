@@ -3,4 +3,3 @@ cache/
 node_modules/
 .env
 .vscode
-lib/
