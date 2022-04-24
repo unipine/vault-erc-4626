@@ -7,12 +7,12 @@
 [submodule "fuse-flywheel"]
 	path = lib/fuse-flywheel
 	url = https://github.com/fei-protocol/fuse-flywheel
-[submodule "forge-std"]
-	path = lib/forge-std
-	url = https://github.com/brockelmore/forge-std
 [submodule "solmate"]
 	path = lib/solmate
 	url = https://github.com/Rari-Capital/solmate
 [submodule "lib/v3-periphery"]
 	path = lib/v3-periphery
 	url = https://github.com/uniswap/v3-periphery
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/brockelmore/forge-std
