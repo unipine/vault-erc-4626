@@ -41,10 +41,10 @@ export default function Home() {
   const [depositValue, setDepositValue] = useState(0);
   const [withdrawalValue, setWithdrawalValue] = useState(0);
   useEffect(() => {
-    if(account != null) {
+    if (account != null) {
       updateBalances(account, setNative, setVault);
     }
-  });
+  }, [account]);
   return (
     <div className={styles.container}>
       <Head>
@@ -78,29 +78,29 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.module}>
           <h1 className={styles.text}>Market Make like the Pros</h1>
-          <h3 className={styles.text} style={{fontWeight: "normal", marginTop: "-10px"}}>Your Home for Trading Power Perpetuals</h3>
+          <h3 className={styles.text} style={{ fontWeight: "normal", marginTop: "-10px" }}>Your Home for Trading Power Perpetuals</h3>
 
           <div style={{ display: 'grid', gap: '20px', padding: '40px 20px' }}>
-            <section style={{ display: 'flex', gap: '20px'}}>
-              <div style={{ borderRadius: '25px', textAlign: "center", width: "100%", background: `linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) ), url("bear.png")`, backgroundSize: 'contain', padding: "40px", border: "2px solid #F1559B", marginTop: "-30px"}}>
-                <h2 style={{fontSize:"32px", marginTop: "-12px"}}>Bearish</h2>
-                <i style={{marginTop:"-12px"}}>~Continuously mint and short squeeth while maintaining collateral ratio~</i>
-                <div style={{ borderRadius: '25px', backgroundColor: "#F1559BD0", padding: "5px", width: "40%", margin: "auto", marginBottom: "12px", marginTop: "10px"}}>
+            <section style={{ display: 'flex', gap: '20px' }}>
+              <div style={{ borderRadius: '25px', textAlign: "center", width: "100%", background: `linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) ), url("bear.png")`, backgroundSize: 'contain', padding: "40px", border: "2px solid #F1559B", marginTop: "-30px" }}>
+                <h2 style={{ fontSize: "32px", marginTop: "-12px" }}>Bearish</h2>
+                <i style={{ marginTop: "-12px" }}>~Continuously mint and short squeeth while maintaining collateral ratio~</i>
+                <div style={{ borderRadius: '25px', backgroundColor: "#F1559BD0", padding: "5px", width: "40%", margin: "auto", marginBottom: "12px", marginTop: "10px" }}>
                   <b>Your Balance</b>
-                  <p style={{marginTop: "-3px"}}>{nativeBalance} ETH</p>
+                  <p style={{ marginTop: "-3px" }}>{nativeBalance} ETH</p>
                 </div>
-                <section style={{ display: 'flex', gap: '20px', marginBottom: "12px"}}>
-                  <div style={{ borderRadius: '25px', backgroundColor: "#90afc9D0", border: "1px solid black", width: "50%", textAlign: "center", display: 'flex', alignItems: "center", marginLeft: "10px", padding: "7px"}}>
-                    <div style={{padding: "6px"}}>
-                    <p style={{fontSize: "small"}}>Available: {nativeBalance} ETH.</p>
-                    <Input id="deposit-input"
-                      defaultValue='0.0'
-                      placeholder='0.0'
-                      onChange={(e) => { setDepositValue(e.target.value) }}
-                      type="number"
-                    />
+                <section style={{ display: 'flex', gap: '20px', marginBottom: "12px" }}>
+                  <div style={{ borderRadius: '25px', backgroundColor: "#90afc9D0", border: "1px solid black", width: "50%", textAlign: "center", display: 'flex', alignItems: "center", marginLeft: "10px", padding: "7px" }}>
+                    <div style={{ padding: "6px" }}>
+                      <p style={{ fontSize: "small" }}>Available: {nativeBalance} ETH.</p>
+                      <Input id="deposit-input"
+                        defaultValue='0.0'
+                        placeholder='0.0'
+                        onChange={(e) => { setDepositValue(e.target.value) }}
+                        type="number"
+                      />
                     </div>
-                    <div className={styles.buttoner} style={{right: "-200%"}}>
+                    <div className={styles.buttoner} style={{ right: "-200%" }}>
                       <Button
                         theme='outline'
                         id='infobutton'
@@ -132,17 +132,17 @@ export default function Home() {
                     </div>
                   </div>
                   <div style={{ borderRadius: '25px', padding: "8px", width: "50%", backgroundColor: "#90afc9D0", textAlign: "center", display: 'flex', alignItems: "center", border: "1px solid black" }}>
-                    <div style={{float: "left", padding: "6px"}}>
-                    <p style={{fontSize: "small"}}>Available: {vaultBalance} ETH.</p>
-                    <Input id="withdrawal-input"
-                      defaultValue='0.0'
-                      placeholder='0.0'
-                      onChange={(e) => { setWithdrawalValue(e.target.value) }}
-                      type="number"
+                    <div style={{ float: "left", padding: "6px" }}>
+                      <p style={{ fontSize: "small" }}>Available: {vaultBalance} ETH.</p>
+                      <Input id="withdrawal-input"
+                        defaultValue='0.0'
+                        placeholder='0.0'
+                        onChange={(e) => { setWithdrawalValue(e.target.value) }}
+                        type="number"
 
-                    />
+                      />
                     </div>
-                    <div className={styles.buttoner} style={{right: "-200%"}}>
+                    <div className={styles.buttoner} style={{ right: "-200%" }}>
                       <Button
                         theme='outline'
                         id='infobutton'
@@ -173,7 +173,7 @@ export default function Home() {
                     </div>
                   </div>
                 </section>
-                <div style={{ borderRadius: '25px', backgroundColor: "#F1559BD0", padding: "5px", width: "40%", margin: "auto", marginBottom: "12px"}}>
+                <div style={{ borderRadius: '25px', backgroundColor: "#F1559BD0", padding: "5px", width: "40%", margin: "auto", marginBottom: "12px" }}>
                   <p>Total Value Deposited 0 ETH</p>
                   <p>7D Performace 0%</p>
                   <p>28D Performance 0%</p>
@@ -194,7 +194,7 @@ export default function Home() {
         </div>
         <div>
           <img src={"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Copyleft.svg/1920px-Copyleft.svg.png"} style={{ height: "10px", marginTop: "26px", float: "left" }} />
-          <h5 style={{ float: "right" }}>&nbsp;2022 Katan Ralianio.</h5>
+          <h5 style={{ float: "right" }}>&nbsp;2022 Katan Raliani Co.</h5>
         </div>
       </main>
     </div>
