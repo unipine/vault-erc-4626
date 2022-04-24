@@ -68,11 +68,11 @@ contract EulerVault is ERC4626 {
     ERC20 public immutable token;
 
     constructor(
-        ERC20 _token,
+        address _token,
         string memory _name,
         string memory _symbol
-    ) ERC4626(_token, _name, _symbol) {
-        token = _token;
+    ) ERC4626(ERC20(_token), _name, _symbol) {
+        token = ERC20(_token);
     }
 
     // Vault has WETH
@@ -82,24 +82,7 @@ contract EulerVault is ERC4626 {
     function beforeWithdraw(uint256 underlyingAmount, uint256 shares)
         internal
         override
-    {
-        // Use the markets module:
-        IEulerMarkets markets = IEulerMarkets(EULER_MAINNET_MARKETS);
-
-        uint256 collateralAmount = totalAssets();
-        // Gives us the amount of ETH to swap
-        uint256 ethToWithdraw = _calcEthToWithdraw(shares, collateralAmount);
-        // Swap WETH for oSQTH
-        swapExactInputSingleSwap(ethToWithdraw, WETH9, oSQTH);
-        // Unlock WETH collateral
-        // Later on, to repay the 2 tokens plus interest:
-        IERC20(oSQTH).approve(EULER_MAINNET, type(uint256).max);
-        // Get the dToken address of the borrowed asset: SQTH
-        IEulerDToken borrowedDToken = IEulerDToken(
-            markets.underlyingToDToken(oSQTH)
-        );
-        borrowedDToken.repay(0, shares);
-    }
+    {}
 
     // Vault has WETH
     // Supply WETH as collateral
@@ -108,52 +91,7 @@ contract EulerVault is ERC4626 {
     function afterDeposit(uint256 underlyingAmount, uint256 shares)
         internal
         override
-    {
-        // Use the markets module:
-        IEulerMarkets markets = IEulerMarkets(EULER_MAINNET_MARKETS);
-
-        // Approve, get eToken addr, and deposit:
-        IERC20(WETH9).approve(EULER_MAINNET, type(uint256).max);
-        IEulerEToken collateralEToken = IEulerEToken(
-            markets.underlyingToEToken(WETH9)
-        );
-        collateralEToken.deposit(0, underlyingAmount);
-
-        // Enter the collateral market (collateral's address, *not* the eToken address):
-        markets.enterMarket(0, address(WETH9));
-
-        // Get the dToken address of the borrowed asset: SQTH
-        IEulerDToken borrowedDToken = IEulerDToken(
-            markets.underlyingToDToken(oSQTH)
-        );
-
-        // Borrow 2 tokens (assuming 18 decimal places).
-        // The 2 tokens will be sent to your wallet (ie, address(this)).
-        // This automatically enters you into the borrowed market.
-
-        //wrap?
-
-        // Get number of squeeth we can borrow
-        uint256 wSqueethAmount = quoter.quoteExactInputSingle(
-            oSQTH,
-            WETH9,
-            poolFee,
-            underlyingAmount,
-            0
-        );
-
-        uint256 squeethToBorrow = wSqueethAmount / COLLAT_RATIO;
-        borrowedDToken.borrow(0, squeethToBorrow);
-
-        totalSupply += borrowedDToken.balanceOf(address(this));
-
-        // Swap oSQTH for WETH9 in Uniswap V3 pool
-        uint256 amountOut = swapExactInputSingleSwap(
-            squeethToBorrow,
-            oSQTH,
-            WETH9
-        );
-    }
+    {}
 
     /**
      * @notice Swap for an exact amount based off of input
