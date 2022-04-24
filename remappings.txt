@@ -4,4 +4,6 @@ fuse-flywheel/=lib/fuse-flywheel/src/
 tribe-turbo/=lib/tribe-turbo/src/
 flywheel/=lib/fuse-flywheel/lib/flywheel-v2/src/
 solmate/=lib/solmate/src
-uniswap/=lib/v3-periphery/contracts/
+uniswap/=lib/v3-periphery-foundry/contracts/
+@openzeppelin/=lib/openzeppelin-contracts/
+@uniswap/v3-core/=lib/v3-core/

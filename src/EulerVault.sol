@@ -8,8 +8,6 @@ import {TransferHelper} from "uniswap/libraries/TransferHelper.sol";
 
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
-import {IOracle} from "../interfaces/IOracle.sol";
-import {IController} from "../interfaces/IController.sol";
 
 contract PowerVault is ERC4626 {
     using FixedPointMathLib for uint256;
@@ -18,8 +16,8 @@ contract PowerVault is ERC4626 {
     // Router
     ISwapRouter public immutable swapRouter;
 
-    // REMEMBER TO DIVIDE BY 1e18 after multiplying
-    uint256 COLLAT_RATIO = 1.5e18;
+    // REMEMBER TO DIVIDE after multiplying
+    uint256 COLLAT_RATIO = 2;
 
     // Minimum to mint REMEMBER TO DIVIDE BY 1e18
     uint256 MINIMUM_MINT = 69e17;
@@ -30,14 +28,19 @@ contract PowerVault is ERC4626 {
     // oSQTH token address
     address public constant oSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
 
+    // Ropsten Euler markets
+    address public constant EULER_MARKETS = 0x60Ec84902908f5c8420331300055A63E6284F522;
+
     // WETH token address
     address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-
+    
     // eth wSQTH pool address
     address ethWSqueethPool = 0x0;
 
     // Pool fee of 0.3%
     uint24 public constant poolFee = 3000;
+
+    uint256 public constant hedgingTwapPeriod = 180;
 
     uint256 public totalAssets = 0;
     uint256 public maxAssets = uint256(-1);
@@ -51,10 +54,10 @@ contract PowerVault is ERC4626 {
         _asset = asset;
     }
 
-    // Vault has ETH
-    // Swap user portion of ETH in Uniswap ETH<>oSQTH pool (this gives user oSQTH)
-    // Burn oSQTH to unlock collateral (in ETH)
-    // Collateral gets sent to user
+    // Vault has WETH
+    // Swap user portion of WETH in Uniswap WETH<>oSQTH pool (this gives user oSQTH)
+    // Partially repay oSQTH loan
+    // Unlock WETH collateral
     function beforeWithdraw(uint256 underlyingAmount, uint256 shares)
         internal
         override
@@ -64,42 +67,60 @@ contract PowerVault is ERC4626 {
         uint256 ethToWithdraw = _calcEthToWithdraw(shares, collateralAmount);
         // Swap WETH for oSQTH
         swapExactInputSingleSwap(ethToWithdraw, WETH9, oSQTH);
-        // Burn oSQTH
-        _burnWPowerPerp(msg.sender, debt, ethToWithdraw, false);
+        // Unlock WETH collateral
+        // Later on, to repay the 2 tokens plus interest:
+        IERC20(oSQTH).approve(EULER_MAINNET, type(uint).max);
+        borrowedDToken.repay(0, shares);
     }
 
+    // Vault has WETH
+    // Supply WETH as collateral
+    // Borrow oSQTH
+    // Sell oSQTH for WETH on Uniswap
     function afterDeposit(uint256 underlyingAmount, uint256 shares)
         internal
         override
     {
-        uint256 collateralAmount = address(this).balance;
+        // Use the markets module:
+        IEulerMarkets markets = IEulerMarkets(EULER_MAINNET_MARKETS);
 
-        // Check if we have hit collateralization ratio *mint minimum
-        if (
-            collateralAmount >
-            MINIMUM_MINT * /* shouldn't this be *3/2 */
-                COLLAT_RATIO
-        ) {
-            // Mint oSQTH
-            (uint256 wSqueethToMint, ) = _calcWsqueethToMintAndFee(
-                underlyingAmount,
-                debt,
-                collateralAmount
-            );
-            // mint wSqueeth and send it to msg.sender
-            _mintWPowerPerp(
-                msg.sender,
-                wSqueethToMint,
-                underlyingAmount,
-                false
-            );
-            debt += wSqueethToMint;
-            // Swap oSQTH for WETH9 in Uniswap V3 pool
-            uint256 amountOut = swapExactInputSingleSwap(
-                wSqueethToMint,
+        // Approve, get eToken addr, and deposit:
+        IERC20(WETH9).approve(EULER_MAINNET, type(uint).max);
+        IEulerEToken collateralEToken = IEulerEToken(markets.underlyingToEToken(WETH9));
+        collateralEToken.deposit(0, underlyingAmount);
+
+        // Enter the collateral market (collateral's address, *not* the eToken address):
+        markets.enterMarket(0, address(WETH9));
+
+        // Get the dToken address of the borrowed asset: SQTH
+        IEulerDToken borrowedDToken = IEulerDToken(markets.underlyingToDToken(oSQTH));
+
+        // Borrow 2 tokens (assuming 18 decimal places).
+        // The 2 tokens will be sent to your wallet (ie, address(this)).
+        // This automatically enters you into the borrowed market.
+
+        //wrap?
+
+        // Get number of squeeth we can borrow
+        uint256 wSqueethEthPrice = IOracle(oracle).getTwap(
+                UNIoSQTH3,
                 oSQTH,
-                WETH9
+                WETH9,
+                hedgingTwapPeriod,
+                true
             );
+
+        uint256 squeethToBorrow = (underlyingAmount * wSqueethEthPrice) / COLLAT_RATIO;
+        borrowedDToken.borrow(0, squeethToBorrow);
+
+        totalSupply += borrowedDToken.balanceOf(address(this));
+        
+        // Swap oSQTH for WETH9 in Uniswap V3 pool
+        uint256 amountOut = swapExactInputSingleSwap(
+            wSqueethToMint,
+            oSQTH,
+            WETH9
+        );
         }
     }
 
@@ -141,48 +162,6 @@ contract PowerVault is ERC4626 {
 
         // The call to `exactInputSingle` executes the swap.
         amountOut = swapRouter.exactInputSingle(params);
-    }
-
-    /**
-     * @notice calculate amount of wSqueeth to mint and fee paid from deposited amount
-     * @param _depositedAmount amount of deposited WETH
-     * @param _strategyDebtAmount amount of strategy debt
-     * @param _strategyCollateralAmount collateral amount in strategy
-     * @return amount of minted wSqueeth and ETH fee paid on minted squeeth
-     */
-    function _calcWsqueethToMintAndFee(
-        uint256 _depositedAmount,
-        uint256 _strategyDebtAmount,
-        uint256 _strategyCollateralAmount
-    ) internal view returns (uint256, uint256) {
-        uint256 wSqueethToMint;
-        uint256 feeAdjustment = _calcFeeAdjustment();
-
-        if (_strategyDebtAmount == 0 && _strategyCollateralAmount == 0) {
-            require(totalSupply() == 0, "Crab contracts shut down");
-
-            uint256 wSqueethEthPrice = IOracle(oracle).getTwap(
-                ethWSqueethPool,
-                wPowerPerp,
-                WETH9,
-                hedgingTwapPeriod,
-                true
-            );
-            uint256 squeethDelta = wSqueethEthPrice.wmul(2e18);
-            wSqueethToMint = _depositedAmount.wdiv(
-                squeethDelta.add(feeAdjustment)
-            );
-        } else {
-            wSqueethToMint = _depositedAmount.wmul(_strategyDebtAmount).wdiv(
-                _strategyCollateralAmount.add(
-                    _strategyDebtAmount.wmul(feeAdjustment)
-                )
-            );
-        }
-
-        uint256 fee = wSqueethToMint.wmul(feeAdjustment);
-
-        return (wSqueethToMint, fee);
     }
 
     /**

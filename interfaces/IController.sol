@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity =0.7.6;
+pragma solidity =0.8.10;
 
 pragma abicoder v2;
 
-import {VaultLib} from "../libs/VaultLib.sol";
+import {VaultLib} from "./libs/VaultLib.sol";
 
 interface IController {
     function ethQuoteCurrencyPool() external view returns (address);
@@ -19,7 +19,10 @@ interface IController {
 
     function quoteCurrency() external view returns (address);
 
-    function vaults(uint256 _vaultId) external view returns (VaultLib.Vault memory);
+    function vaults(uint256 _vaultId)
+        external
+        view
+        returns (VaultLib.Vault memory);
 
     function shortPowerPerp() external view returns (address);
 
@@ -67,7 +70,9 @@ interface IController {
         uint256 _withdrawAmount
     ) external returns (uint256 wPowerPerpAmount);
 
-    function liquidate(uint256 _vaultId, uint256 _maxDebtAmount) external returns (uint256);
+    function liquidate(uint256 _vaultId, uint256 _maxDebtAmount)
+        external
+        returns (uint256);
 
     function updateOperator(uint256 _vaultId, address _operator) external;
 
@@ -82,7 +87,8 @@ interface IController {
 
     function isShutDown() external returns (bool);
 
-    function depositUniPositionToken(uint256 _vaultId, uint256 _uniTokenId) external;
+    function depositUniPositionToken(uint256 _vaultId, uint256 _uniTokenId)
+        external;
 
     function withdrawUniPositionToken(uint256 _vaultId) external;
 }
