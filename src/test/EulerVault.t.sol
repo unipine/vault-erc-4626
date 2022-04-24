@@ -33,11 +33,11 @@ contract EulerVaultTest is DSTest {
         console.log("deploy MockERC20");
         underlying = new MockERC20("Mock Token", "TKN", 18);
         console.log("here");
-        vault = new EulerVault(underlying, "Short SQTH Vault", "PPP-WETH");
+        // vault = new EulerVault(underlying, "Short SQTH Vault", "PPP-WETH");
         console.log("post deploy");
 
         // Give Alice some mock tokens, ~$315k worth
-        underlying.mint(alice, 2_000e18);
+        // underlying.mint(alice, 2_000e18);
     }
 
     function testDeposit() public {
