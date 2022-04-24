@@ -13,6 +13,6 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/brockelmore/forge-std
-[submodule "lib/v3-periphery-foundry.git"]
-	path = lib/v3-periphery-foundry.git
-	url = https://github.com/gakonst/v3-periphery-foundry.git
+[submodule "lib/v3-periphery-foundry"]
+	path = lib/v3-periphery-foundry
+	url = https://github.com/gakonst/v3-periphery-foundry
