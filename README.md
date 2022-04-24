@@ -6,7 +6,7 @@ Democratized access to flat power perps via a composable, tokenized vault standa
 
 Flat Perp alternates between two different Power Perp strategies!
 
-Vault States
+_Vault States_
 
 - Vault is below 6.9 ETH: Funds go into the Euler strategy
 - Vault is above 6.9 ETH: Funds go into the Power strategy
