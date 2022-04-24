@@ -65,11 +65,15 @@ contract EulerVault is ERC4626 {
     uint256 public maxAssets = type(uint256).max;
     uint256 private debt = 0;
 
+    ERC20 public immutable token;
+
     constructor(
-        ERC20 _asset,
+        ERC20 _token,
         string memory _name,
         string memory _symbol
-    ) ERC4626(_asset, _name, _symbol) {}
+    ) ERC4626(_token, _name, _symbol) {
+        token = _token;
+    }
 
     // Vault has WETH
     // Swap user portion of WETH in Uniswap WETH<>oSQTH pool (this gives user oSQTH)
