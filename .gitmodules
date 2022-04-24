@@ -10,9 +10,9 @@
 [submodule "solmate"]
 	path = lib/solmate
 	url = https://github.com/Rari-Capital/solmate
-[submodule "lib/v3-periphery"]
-	path = lib/v3-periphery
-	url = https://github.com/uniswap/v3-periphery
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/brockelmore/forge-std
+[submodule "lib/v3-periphery-foundry.git"]
+	path = lib/v3-periphery-foundry.git
+	url = https://github.com/gakonst/v3-periphery-foundry.git
